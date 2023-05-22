@@ -1,11 +1,14 @@
 local enemy = require "Enemy"
 
+-- every time the game boots up, randomise!
+math.randomseed(os.time())
+
 local game = {
     difficulty = 1,
     state = {
-        menu = true,
+        menu = false,
         paused = false,
-        running = false,
+        running = true,
         ended = false
     }
 }
@@ -41,13 +44,12 @@ function love.draw()
 
     if game.state["running"] then
         love.graphics.circle("fill", player.x, player.y, player.radius)
+        for i = 1, #enemies do
+            enemies[i]: draw()
+        end
     end
 
     if not game.state["running"] then
         love.graphics.circle("fill", player.x, player.y, player.radius / 2)
-    end
-
-    for i = 1, #enemies do
-        enemies[i]: draw()
     end
 end
