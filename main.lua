@@ -39,7 +39,9 @@ local player = {
 
 local buttons = {
     menu_state = {},
-    ended_state = {}
+    ended_state = {},
+    paused_state = {},
+    running_state = {}
 }
 
 local enemies = {}
@@ -62,6 +64,19 @@ local function startNewGame()
     }
 end
 
+local function pause()
+    if game.state["running"] then
+        game.state['running'], game.state['paused'] = false, true
+    end
+end
+
+local function unpause()
+    if game.state["paused"] then
+        game.state['paused'], game.state['running'] = false, true
+    end
+end
+
+
 function love.mousepressed(x, y, button, istouch, presses)
     if not game.state['running'] then
         if button == 1 then
@@ -73,7 +88,15 @@ function love.mousepressed(x, y, button, istouch, presses)
                 for index in pairs(buttons.ended_state) do
                     buttons.ended_state[index]:checkPressed(x, y, player.radius)
                 end
+            elseif game.state["paused"] then
+                for index in pairs(buttons.paused_state) do
+                    buttons.paused_state[index]:checkPressed(x, y, player.radius)
+                end
             end
+        end
+    elseif game.state["running"] then
+        for index in pairs(buttons.running_state) do
+            buttons.running_state[index]:checkPressed(x, y, player.radius)
         end
     end
 end
@@ -88,6 +111,10 @@ function love.load()
     buttons.ended_state.replay_game = button("Replay", startNewGame, nil)
     buttons.ended_state.menu = button("Menu", changeGameState, "menu", nil, nil)
     buttons.ended_state.exit_game = button("Quit", love.event.quit, nil, nil)
+
+    buttons.paused_state.play = button("Unpause", unpause, nil)
+
+    buttons.running_state.pause = button("Pause", pause, nil)
 end
 
 function love.update(dt)
@@ -105,6 +132,10 @@ function love.update(dt)
                         game.points = game.points + 1
                     end
                 end
+
+                -- if love.keyboard.isDown("p") then
+                --     game.state['running'], game.state['paused'] = false, true
+                -- end
             else
                 changeGameState("ended")
             end
@@ -120,6 +151,7 @@ function love.draw()
         .getWidth())
 
     if game.state["running"] then
+        buttons.running_state.pause:draw(10, 20, 17, 10, 50, 40)
         love.graphics.printf(math.floor(game.points), fonts.large.font, 0, 10, love.graphics.getWidth(), "center")
         love.graphics.circle("fill", player.x, player.y, player.radius)
         for i = 1, #enemies do
@@ -137,6 +169,10 @@ function love.draw()
 
         love.graphics.printf(math.floor(game.points), fonts.massive.font, 0,
             love.graphics.getHeight() / 2 - fonts.massive.size, love.graphics.getWidth(), "center")
+    elseif game.state["paused"] then
+        love.graphics.printf("Paused", fonts.massive.font, 0, love.graphics.getHeight() / 2 - fonts.massive.size,
+            love.graphics.getWidth(), "center")
+        buttons.paused_state.play:draw(love.graphics.getWidth() / 2.32, love.graphics.getWidth() / 2, 10, 10)
     end
 
     if not game.state["running"] then

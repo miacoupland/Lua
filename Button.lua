@@ -2,7 +2,7 @@ local love = require "love"
 
 function Button(text, func, func_param, width, height)
     return {
-        width = width or 100,
+        width = width or 110,
         height = height or 40,
         func = func or function()
             print("This button has no function attached")
